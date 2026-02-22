@@ -1,0 +1,22 @@
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% macro flashMessage(flashMessageText, flashMessageType) %}
+  {% if flashMessageText %}
+    {% if flashMessageType == 'success' %}
+      {{ govukNotificationBanner({
+        type: "success",
+        html: '<p class="govuk-body">' + flashMessageText + '</p>'
+      }) }}
+    {% elif flashMessageType == 'error' %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: flashMessageText }]
+      }) }}
+    {% elif flashMessageType == 'info' %}
+      {{ govukNotificationBanner({
+        html: '<p class="govuk-body">' + flashMessageText + '</p>'
+      }) }}
+    {% endif %}
+  {% endif %}
+{% endmacro %}

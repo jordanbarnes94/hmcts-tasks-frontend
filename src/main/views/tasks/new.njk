@@ -1,0 +1,44 @@
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "tasks/_form.njk" import taskForm %}
+
+{% extends "template.njk" %}
+
+{% block pageTitle %}{{ "Error: " if errors }}Create a task - Task Manager{% endblock %}
+
+{% block content %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/"
+  }) }}
+
+  {% if errors %}
+    {% set errorList = [] %}
+    {% if errors.title %}
+      {% set errorList = (errorList.push({ text: errors.title, href: '#title' }), errorList) %}
+    {% endif %}
+    {% if errors.description %}
+      {% set errorList = (errorList.push({ text: errors.description, href: '#description' }), errorList) %}
+    {% endif %}
+    {% if errors.dueDate %}
+      {% set errorList = (errorList.push({ text: errors.dueDate, href: '#dueDate-day' }), errorList) %}
+    {% endif %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errorList if errorList | length,
+      descriptionText: errors._message if errors._message
+    }) }}
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">Create a task</h1>
+
+  {{ taskForm(
+    task=task,
+    action="/tasks",
+    buttonText="Create task",
+    cancelHref="/",
+    showStatus=false,
+    errors=errors,
+    csrfToken=csrfToken
+  ) }}
+{% endblock %}

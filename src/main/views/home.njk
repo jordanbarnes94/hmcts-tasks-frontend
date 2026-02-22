@@ -1,121 +1,245 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "macros/flash.njk" import flashMessage %}
 
 {% extends "template.njk" %}
 
-<!-- You may want to make further use of these components: https://design-system.service.gov.uk/components/
-but ultimately it is up to you -->
-
 {% block content %}
-  <h1 class="govuk-heading-xl">Welcome to your dev test!</h1>
+  <h1 class="govuk-heading-xl">Task Management</h1>
 
-  <!-- The freedom is yours. You can design the solution however you like, however there is a starting point provided
-  to ensure you have both services running. You may want to make use of the Gov UK Components:
-  https://design-system.service.gov.uk/components/ to add tabs and so forth :) -->
+  {{ flashMessage(flashMessageText, flashMessageType) }}
 
-  {% if example.id %}
-
-    {{ govukSummaryList({
-      rows: [
-        {
-          key: {
-            text: "ID"
-          },
-          value: {
-            text: example.id
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case id ?!"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Case Number"
-          },
-          value: {
-            text: example.caseNumber
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case number"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Title"
-          },
-          value: {
-            html: example.title
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "change case title"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Description"
-          },
-          value: {
-            html: example.description
-          },
-          actions: {
-            items: [
-               {
-                 href: "#",
-                 text: "Delete",
-                 visuallyHiddenText: "Delete description"
-               },
-               {
-                 href: "#",
-                 text: "Change",
-                 visuallyHiddenText: "Change description"
-               }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Status"
-          },
-          value: {
-            html: example.status
-          },
-          actions: {
-            items: [
-            ]
-          }
-        },
-        {
-          key: {
-           text: "Created Date"
-          },
-          value: {
-           html: example.createdDate
-          },
-          actions: {
-           items: [
-           ]
-          }
-        }
-      ]
+  {# Error Summary #}
+  {% if error %}
+    {{ govukErrorSummary({
+      titleText: error.title,
+      descriptionText: error.message
     }) }}
-
   {% endif %}
+
+  <div class="govuk-grid-row">
+    {# Left column: Filters #}
+    <div class="govuk-grid-column-one-third">
+      <form method="get" action="/">
+        <h2 class="govuk-heading-m">Filter tasks</h2>
+
+        {{ govukInput({
+          label: {
+            text: "Search",
+            classes: "govuk-label--s"
+          },
+          hint: {
+            text: "Search by title or description"
+          },
+          id: "search",
+          name: "search",
+          value: filters.search
+        }) }}
+
+        {% set statusSelectItems = [{ value: "", text: "All statuses", selected: filters.status == "" }] %}
+        {% for option in statusOptions %}
+          {% set statusSelectItems = (statusSelectItems.push({
+            value: option.value,
+            text: option.text,
+            selected: filters.status == option.value
+          }), statusSelectItems) %}
+        {% endfor %}
+
+        {{ govukSelect({
+          id: "status",
+          name: "status",
+          label: {
+            text: "Status",
+            classes: "govuk-label--s"
+          },
+          items: statusSelectItems
+        }) }}
+
+        {{ govukDateInput({
+          id: "dueDateFrom",
+          namePrefix: "dueDateFrom",
+          fieldset: {
+            legend: {
+              text: "Due after",
+              classes: "govuk-fieldset__legend--s"
+            }
+          },
+          hint: {
+            text: "For example, 27 3 2026"
+          },
+          items: [
+            {
+              name: "day",
+              classes: "govuk-input--width-2",
+              value: filters['dueDateFrom-day']
+            },
+            {
+              name: "month",
+              classes: "govuk-input--width-2",
+              value: filters['dueDateFrom-month']
+            },
+            {
+              name: "year",
+              classes: "govuk-input--width-4",
+              value: filters['dueDateFrom-year']
+            }
+          ]
+        }) }}
+
+        {{ govukDateInput({
+          id: "dueDateTo",
+          namePrefix: "dueDateTo",
+          fieldset: {
+            legend: {
+              text: "Due before",
+              classes: "govuk-fieldset__legend--s"
+            }
+          },
+          hint: {
+            text: "For example, 31 12 2026"
+          },
+          items: [
+            {
+              name: "day",
+              classes: "govuk-input--width-2",
+              value: filters['dueDateTo-day']
+            },
+            {
+              name: "month",
+              classes: "govuk-input--width-2",
+              value: filters['dueDateTo-month']
+            },
+            {
+              name: "year",
+              classes: "govuk-input--width-4",
+              value: filters['dueDateTo-year']
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Apply filters",
+            type: "submit"
+          }) }}
+
+          <a href="/" class="govuk-link">Clear all</a>
+        </div>
+      </form>
+    </div>
+
+    {# Right column: Results #}
+    <div class="govuk-grid-column-two-thirds">
+    {{ govukButton({
+      text: "Add new task",
+      href: "/tasks/new"
+    }) }}
+      {# Pagination Component #}
+      {% if pagination and pagination.totalPages > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: pagination.previousUrl
+          } if pagination.previousUrl,
+          next: {
+            href: pagination.nextUrl
+          } if pagination.nextUrl,
+          items: pagination.items
+        }) }}
+      {% endif %}
+      {# Pagination Info #}
+      {% if pagination %}
+        <p class="govuk-body">
+          Showing {{ pagination.startItem }} to {{ pagination.endItem }} of {{ pagination.totalElements }} tasks
+        </p>
+      {% endif %}
+
+      {# Task List #}
+      {% if tasks and tasks.length > 0 %}
+
+        {% for task in tasks %}
+
+          {{ govukSummaryList({
+          card: {
+            title: {
+              text: task.title
+            },
+            actions: {
+              items: [
+                {
+                  href: "/tasks/" + task.id,
+                  text: "View",
+                  visuallyHiddenText: "View task"
+                }
+              ]
+            }
+          },
+          rows: [
+            {
+              key: {
+                text: "Description"
+              },
+              value: {
+                html: task.description or '<span class="govuk-hint">No description</span>'
+              }
+            },
+            {
+              key: {
+                text: "Status"
+              },
+              value: {
+                html: task.statusDisplayValue
+              }
+            },
+            {
+              key: {
+                text: "Due Date"
+              },
+              value: {
+                html: task.dueDateFormatted
+              }
+            },
+            {
+              key: {
+               text: "Created Date"
+              },
+              value: {
+               html: task.createdAtFormatted
+              }
+            }
+          ]
+        }) }}
+
+        {% endfor %}
+
+      {% else %}
+        <p class="govuk-body">No tasks found.</p>
+        {% if filters.search or filters.status or filters['dueDateFrom-day'] or filters['dueDateTo-day'] %}
+          <p class="govuk-body">Try adjusting your filters.</p>
+        {% endif %}
+      {% endif %}
+
+      {# Pagination Component #}
+      {% if pagination and pagination.totalPages > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: pagination.previousUrl
+          } if pagination.previousUrl,
+          next: {
+            href: pagination.nextUrl
+          } if pagination.nextUrl,
+          items: pagination.items
+        }) }}
+      {% endif %}
+      {{ govukButton({
+        text: "Add new task",
+        href: "/tasks/new"
+      }) }}
+    </div>
+  </div>
 
 {% endblock %}

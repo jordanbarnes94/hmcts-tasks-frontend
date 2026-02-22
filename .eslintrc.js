@@ -1,5 +1,13 @@
 module.exports = {
   root: true,
+  settings: {
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
+    },
+  },
   ignorePatterns: ['src/main/views/govuk/**'],
   env: { browser: true, es6: true, node: true },
   parser: '@typescript-eslint/parser',
@@ -39,10 +47,15 @@ module.exports = {
     'import/order': [
       'error',
       {
-        alphabetize: {
-          caseInsensitive: false,
-          order: 'asc',
-        },
+        pathGroups: [
+          {
+            pattern: '@/**',
+            group: 'internal',
+            position: 'after',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['builtin'],
+        alphabetize: { order: 'asc' },
         'newlines-between': 'always',
       },
     ],

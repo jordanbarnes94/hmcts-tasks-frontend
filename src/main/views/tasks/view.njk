@@ -1,0 +1,99 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "macros/flash.njk" import flashMessage %}
+
+{% extends "template.njk" %}
+
+{% block content %}
+  {{ govukBackLink({
+    text: "Back to task list",
+    href: "/"
+  }) }}
+
+  {{ flashMessage(flashMessageText, flashMessageType) }}
+
+  {% if error %}
+    {{ govukErrorSummary({
+      titleText: error.title,
+      descriptionText: error.message
+    }) }}
+  {% endif %}
+
+  {% if task %}
+    <h1 class="govuk-heading-xl">{{ task.title }}</h1>
+
+    {# Determine tag color based on task status #}
+    {% set statusTagClass = "" %}
+    {% if task.status == TaskStatus.COMPLETED %}
+      {% set statusTagClass = "govuk-tag--green" %}
+    {% elif task.status == TaskStatus.IN_PROGRESS %}
+      {% set statusTagClass = "govuk-tag--blue" %}
+    {% elif task.status == TaskStatus.PENDING %}
+      {% set statusTagClass = "govuk-tag--yellow" %}
+    {% endif %}
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Description"
+          },
+          value: {
+            html: task.description or '<span class="govuk-hint">No description provided</span>'
+          }
+        },
+        {
+          key: {
+            text: "Status"
+          },
+          value: {
+            html: govukTag({ text: task.statusDisplayValue, classes: statusTagClass })
+          }
+        },
+        {
+          key: {
+            text: "Due date"
+          },
+          value: {
+            html: task.dueDateFormatted
+          }
+        },
+        {
+          key: {
+            text: "Created"
+          },
+          value: {
+            html: task.createdAtFormatted
+          }
+        },
+        {
+          key: {
+            text: "Last updated"
+          },
+          value: {
+            html: task.updatedAtFormatted
+          }
+        }
+      ]
+    }) }}
+
+    <div class="govuk-button-group">
+      {{
+        govukButton({
+          text: "Edit task",
+          href: "/tasks/" + task.id + "/edit"
+        })
+      }}
+      {{
+        govukButton({
+          text: "Delete task",
+          classes: "govuk-button--secondary",
+          href: "/tasks/" + task.id + "/delete"
+        })
+      }}
+    </div>
+  {% endif %}
+{% endblock %}

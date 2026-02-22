@@ -1,1 +1,6 @@
-{}
+{
+  "api": {
+    "baseUrl": "https://api.production-domain.gov.uk",
+    "basePath": "/api"
+  }
+}

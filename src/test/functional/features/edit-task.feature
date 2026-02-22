@@ -1,0 +1,41 @@
+Feature: Edit a task
+
+    Scenario: The edit page loads with the task's existing values pre-filled
+        Given I go to '/tasks/new'
+        And I fill in 'Title' with 'Edit Test Task'
+        And I fill in 'dueDate-day' with '10'
+        And I fill in 'dueDate-month' with '3'
+        And I fill in 'dueDate-year' with '2026'
+        And I click 'Create task'
+        When I click 'Edit task'
+        Then the page should include 'Edit task'
+        And the field 'Title' should contain 'Edit Test Task'
+        And the page should include 'Status'
+        And the page should include 'Save changes'
+
+    Scenario: Validation error when title is cleared on edit
+        Given I go to '/tasks/new'
+        And I fill in 'Title' with 'Edit Validation Task'
+        And I fill in 'dueDate-day' with '10'
+        And I fill in 'dueDate-month' with '3'
+        And I fill in 'dueDate-year' with '2026'
+        And I click 'Create task'
+        When I click 'Edit task'
+        And I fill in 'Title' with ''
+        And I click 'Save changes'
+        Then the page should include 'There is a problem'
+        And the page should include 'Enter a title'
+
+    Scenario: Successfully editing a task title and status
+        Given I go to '/tasks/new'
+        And I fill in 'Title' with 'Task Before Edit'
+        And I fill in 'dueDate-day' with '10'
+        And I fill in 'dueDate-month' with '3'
+        And I fill in 'dueDate-year' with '2026'
+        And I click 'Create task'
+        When I click 'Edit task'
+        And I fill in 'Title' with 'Task After Edit'
+        And I check 'In Progress'
+        And I click 'Save changes'
+        Then the page should include 'Task updated successfully'
+        And the page should include 'Task After Edit'

@@ -1,0 +1,114 @@
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "macros/csrf.njk" import csrfProtection %}
+
+{#
+  Reusable task form component for both create and edit pages.
+
+  Parameters:
+  - task: Object with title, description, status, dueDateDay, dueDateMonth, dueDateYear, id (optional)
+  - action: Form action URL (e.g., "/tasks" or "/tasks/123")
+  - buttonText: Submit button text (e.g., "Create task" or "Save changes")
+  - cancelHref: Cancel link destination
+  - statusOptions: Array of status options (only needed if showStatus is true)
+  - showStatus: Boolean - whether to show status select field
+  - errors: Error object
+#}
+{% macro taskForm(task, action, buttonText, cancelHref, statusOptions=[], showStatus=false, errors=null, csrfToken=null) %}
+  <form method="post" action="{{ action }}" novalidate>
+    {{ csrfProtection(csrfToken) }}
+    {{ govukInput({
+      label: {
+        text: "Title",
+        classes: "govuk-label--m"
+      },
+      id: "title",
+      name: "title",
+      value: task.title,
+      errorMessage: { text: errors.title } if errors and errors.title
+    }) }}
+
+    {{ govukTextarea({
+      label: {
+        text: "Description",
+        classes: "govuk-label--m"
+      },
+      hint: {
+        text: "Optional"
+      },
+      id: "description",
+      name: "description",
+      value: task.description,
+      errorMessage: { text: errors.description } if errors and errors.description
+    }) }}
+
+    {% if showStatus %}
+      {# Build radio items dynamically from statusOptions array #}
+      {% set radioItems = [] %}
+      {% for option in statusOptions %}
+        {% set radioItems = (radioItems.push({
+          value: option.value,
+          text: option.text,
+          checked: task.status == option.value
+        }), radioItems) %}
+      {% endfor %}
+
+      {{ govukRadios({
+        id: "status",
+        name: "status",
+        fieldset: {
+          legend: {
+            text: "Status",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: radioItems,
+        errorMessage: { text: errors.status } if errors and errors.status
+      }) }}
+    {% endif %}
+
+    {{ govukDateInput({
+      id: "dueDate",
+      namePrefix: "dueDate",
+      fieldset: {
+        legend: {
+          text: "Due date",
+          classes: "govuk-fieldset__legend--m"
+        }
+      },
+      hint: {
+        text: "For example, 27 3 2026"
+      },
+      errorMessage: { text: errors.dueDate } if errors and errors.dueDate,
+      items: [
+        {
+          name: "day",
+          classes: "govuk-input--width-2",
+          value: task.dueDateDay
+        },
+        {
+          name: "month",
+          classes: "govuk-input--width-2",
+          value: task.dueDateMonth
+        },
+        {
+          name: "year",
+          classes: "govuk-input--width-4",
+          value: task.dueDateYear
+        }
+      ]
+    }) }}
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: buttonText,
+        preventDoubleClick: true
+      }) }}
+
+      <a href="{{ cancelHref }}" class="govuk-link">Cancel</a>
+    </div>
+  </form>
+{% endmacro %}

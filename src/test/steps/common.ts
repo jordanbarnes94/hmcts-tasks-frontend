@@ -15,6 +15,26 @@ Then('the page URL should be {string}', (url: string) => {
   I.waitInUrl(url);
 });
 
+Then('the page URL should contain {string}', (url: string) => {
+  I.seeInCurrentUrl(url);
+});
+
 Then('the page should include {string}', (text: string) => {
   I.waitForText(text);
+});
+
+When('I click {string}', (text: string) => {
+  I.click(text);
+});
+
+When('I fill in {string} with {string}', (field: string, value: string) => {
+  I.fillField(field, value);
+});
+
+When('I check {string}', (option: string) => {
+  I.checkOption(option);
+});
+
+Then('the field {string} should contain {string}', (field: string, value: string) => {
+  I.seeInField(field, value);
 });
